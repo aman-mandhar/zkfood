@@ -22,14 +22,19 @@ class DashboardController extends Controller
         return view('dashboards.admin');
     }
 
-    public function promoterDashboard()
+    public function customerDashboard()
     {
-        return view('dashboards.promoter');
+        return view('dashboards.customer');
     }
 
-    public function guestDashboard()
+    public function foodVendorDashboard()
     {
-        return view('dashboards.guest');
+        return view('dashboards.foodvendor');
+    }
+
+    public function deliveryPartnerDashboard()
+    {
+        return view('dashboards.deliverypartner');
     }
 
     protected function redirectToRoleDashboard()
@@ -39,10 +44,13 @@ class DashboardController extends Controller
         switch ($role) {
             case 1:
                 return redirect()->route('admin.dashboard');
-            case 11:
-                return redirect()->route('promoter.dashboard');
             case 2:
-                return redirect()->route('guest.dashboard');
+                return redirect()->route('customer.dashboard');
+            case 5:
+                return redirect()->route('foodvendor.dashboard');
+            case 7:
+                return redirect()->route('deliverypartner.dashboard');
+
             default:
                 Auth::logout();
                 return redirect()->route('login')->with('error', 'Invalid role! Logged out.');

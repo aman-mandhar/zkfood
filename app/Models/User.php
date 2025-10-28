@@ -5,19 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
-
-use App\Models\UserRole;
-use App\Models\City;
 
 class User extends Authenticatable
 {
-    use  HasFactory, Notifiable;
+    use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
         'name',
         'mobile_number',
@@ -26,86 +19,66 @@ class User extends Authenticatable
         'ref_code',
         'email',
         'password',
-        'user_role',
+        'user_role',       // NOTE: no rename
         'address_line1',
         'address_line2',
-        'city',
+        'city',            // NOTE: FK -> cities.id (no rename)
         'gst_no',
         'location_lat',
         'location_lng',
-        'session_token', // New field for session token
+        'session_token',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password','remember_token'];
 
-    /**
-     * The attributes that should be cast.
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed', // Laravel 10+ password hashing cast
+        'password' => 'hashed',
+        'location_lat' => 'decimal:7',
+        'location_lng' => 'decimal:7',
     ];
 
-    public static function boot()
+    // --- Events ---
+    protected static function booted(): void
     {
-        parent::boot();
+        static::creating(function (self $user) {
+            // referral code only if empty
+            if (blank($user->ref_code)) {
+                do {
+                    $code = strtoupper(Str::random(8));
+                } while (self::where('ref_code', $code)->exists());
+                $user->ref_code = $code;
+            }
 
-        static::creating(function ($user) {
-            // Generate unique referral code
-            do {
-                $code = strtoupper(Str::random(8));
-            } while (User::where('ref_code', $code)->exists());
-
-            $user->ref_code = $code;
-
-            // Set referral logic: if ref_id is not set, use user_id = 1
-            if (empty($user->ref_id)) {
+            // default ref_id = 1 if empty
+            if (blank($user->ref_id)) {
                 $user->ref_id = 1;
             }
         });
     }
 
-    // 🔁 Relationship: Referrer (the one who referred this user)
-    public function referrer()
+    // --- Relationships ---
+    public function referrer()    { return $this->belongsTo(self::class, 'ref_id'); }
+    public function referrals()   { return $this->hasMany(self::class, 'ref_id'); }
+    public function role()        { return $this->belongsTo(UserRole::class, 'user_role'); }
+    public function cityRef()     { return $this->belongsTo(City::class, 'city'); } // alias to avoid method name clash
+
+    // convenience: vendor profile (if any)
+    public function vendor()      { return $this->hasOne(FoodVendor::class, 'user_id'); }
+
+    // --- Scopes/Helpers ---
+    public function scopeRole($q, int $roleId)     { return $q->where('user_role', $roleId); }
+    public function scopeInCity($q, int $cityId)   { return $q->where('city', $cityId); }
+
+    public function isAdmin(): bool    { return (int)$this->user_role === 1; }
+    public function isCustomer(): bool { return (int)$this->user_role === 2; }
+    public function isVendor(): bool   { return (int)$this->user_role === 5; }
+    public function isDelivery(): bool { return (int)$this->user_role === 7; }
+
+    // Normalise mobile (optional)
+    public function setMobileNumberAttribute($val)
     {
-        return $this->belongsTo(User::class, 'ref_id');
+        $digits = preg_replace('/\D+/', '', (string)$val);
+        $this->attributes['mobile_number'] = substr($digits, -10); // keep last 10
     }
-
-    // 🔁 Relationship: Users referred by this user
-    public function referrals()
-    {
-        return $this->hasMany(User::class, 'ref_id');
-    }
-
-    // 🔁 Relationship: User role
-    public function role()
-    {
-        return $this->belongsTo(UserRole::class, 'user_role');
-    }
-
-    // 🔁 Relationship: City
-    public function city()
-    {
-        return $this->belongsTo(City::class, 'city');
-    }
-
-    // 🔑 Required by Laravel for authentication (mobile-based login)
-    public function getAuthPassword()
-    {
-        return $this->password;
-    }
-
-    // 🔎 Custom finder: Get referrer by mobile number
-    public static function getReferralByMobile($mobile_number)
-    {
-        return self::where('mobile_number', $mobile_number)->first();
-    }
-
-
 }
