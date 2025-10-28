@@ -14,6 +14,11 @@ class HomeController extends Controller
 {
     use WithPagination;
 
+    public function notFound()
+    {
+        return view('404');
+    }
+
     public function index()
     {
         return view('welcome');
