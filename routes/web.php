@@ -10,6 +10,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\VideoLinkController;
+use App\Http\Controllers\DashboardController;
 
 // =========================
 // Customer / Ordering
@@ -83,6 +84,20 @@ Route::controller(AuthController::class)->group(function () {
     Route::get('/dashboard-all', 'dashboardAll')->name('dashboard.all');
 });
 
+////// Authenticated Dashboard Routes //////
+Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->middleware('auth')->name('dashboard.index');
+Route::middleware(['auth'])->group(function () {
+        Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])
+            ->name('admin.dashboard');
+        Route::get('/customer/dashboard', [DashboardController::class, 'customerDashboard'])
+            ->name('customer.dashboard');
+        Route::get('/foodvendor/dashboard', [DashboardController::class, 'foodvendorDashboard'])
+            ->name('foodvendor.dashboard');
+        Route::get('/deliverypartner/dashboard', [DashboardController::class, 'deliverypartnerDashboard'])
+            ->name('deliverypartner.dashboard');
+});
+
 // =====================================================
 // Cart (session-based; add/remove public, but checkout requires auth)
 // =====================================================
@@ -98,6 +113,11 @@ Route::prefix('cart')->group(function () {
 // Authenticated: Customer Area
 // =====================================================
 Route::middleware(['auth'])->group(function () {
+
+    // Change User Role
+        Route::get('/change-role', [AuthController::class, 'changeRole'])->name('change-role');
+        Route::get('/search-user', [AuthController::class, 'searchUser'])->name('search-user');
+        Route::post('/change-user-role/{id}', [AuthController::class, 'changeUserRole'])->name('change-user-role');
 
     // Customer dashboard (role check optional if same route reused)
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');

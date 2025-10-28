@@ -18,7 +18,7 @@
         </div>
         <div class="ms-3">
             <h6 class="mb-0">{{ Auth::user()->name }}</h6>
-            <span>{{ $role->name }}</span>
+            <span>#</span>
         </div>
     </div>
 

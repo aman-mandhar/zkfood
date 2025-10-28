@@ -14,7 +14,7 @@
         <button class="btn btn-outline-light d-lg-none me-2" id="sidebarToggle">
             <i class="fa fa-bars"></i>
         </button>
-        <a href="{{ route('promoter.dashboard') }}" class="navbar-brand text-white">
+        <a href="#" class="navbar-brand text-white">
             <img src="{{ asset('images/kv_logo.png') }}" style="height: 60px; background-color: #eefd66;" alt="Logo">
         </a>
 
@@ -25,7 +25,7 @@
                         <span class="d-none d-lg-inline-flex">{{ $current->name }}</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
-                        <a href="{{ route('profile.view', $current) }}" class="dropdown-item">Profile</a>
+                        <a href="#" class="dropdown-item">Profile</a>
                         <form action="{{ route('logout') }}" method="POST" style="display:inline;">
                             @csrf
                             <button type="submit" class="dropdown-item">Logout</button>
