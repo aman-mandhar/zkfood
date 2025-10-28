@@ -7,19 +7,28 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
+    /**
+     * /dashboard पर आएंगे तो user को उसके role के हिसाब से
+     * सही dashboard route पर भेज देंगे।
+     */
     public function index()
     {
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Please login first.');
         }
 
-        // smart role based redirect
-        return $this->redirectToRoleDashboard();
+        // Helper से role ⇒ route name लो
+        $routeName = \App\Support\Dashboard::routeNameFor(Auth::user());
+
+        // जिस route का नाम मिला है, वहीं redirect
+        return redirect()->route($routeName);
     }
+
+    // ---- Individual dashboards (views) ----
 
     public function adminDashboard()
     {
-        return view('dashboards.admin');
+        return view('dashboards.admin'); // resources/views/dashboards/admin.blade.php
     }
 
     public function customerDashboard()
@@ -35,25 +44,5 @@ class DashboardController extends Controller
     public function deliveryPartnerDashboard()
     {
         return view('dashboards.deliverypartner');
-    }
-
-    protected function redirectToRoleDashboard()
-    {
-        $role = (int) Auth::user()->user_role_id; // ensure using correct DB column
-
-        switch ($role) {
-            case 1:
-                return redirect()->route('admin.dashboard');
-            case 2:
-                return redirect()->route('customer.dashboard');
-            case 5:
-                return redirect()->route('foodvendor.dashboard');
-            case 7:
-                return redirect()->route('deliverypartner.dashboard');
-
-            default:
-                Auth::logout();
-                return redirect()->route('login')->with('error', 'Invalid role! Logged out.');
-        }
     }
 }
