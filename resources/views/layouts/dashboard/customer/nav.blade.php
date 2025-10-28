@@ -15,7 +15,7 @@
             <i class="fa fa-bars"></i>
         </button>
         <a href="#" class="navbar-brand text-white">
-            <img src="{{ asset('images/kv_logo.png') }}" style="height: 60px; background-color: #eefd66;" alt="Logo">
+            <img src="{{ asset('images/logo.png') }}" style="height: 60px; background-color: #eefd66;" alt="Logo">
         </a>
 
         <div class="collapse navbar-collapse">

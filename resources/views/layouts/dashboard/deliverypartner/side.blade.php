@@ -1,6 +1,6 @@
 @php
         $current = App\Models\User::find(Auth::user()->id);
-        $role = App\Models\UserRole::find($current->user_role_id);
+        $role = App\Models\UserRole::find($current->user_role);
         $picture = $current->profile_image
             ? asset('storage/' . $current->profile_image)
             : asset('dashboard1/dist/img/my-avatar.png');
@@ -18,47 +18,29 @@
         </div>
         <div class="ms-3">
             <h6 class="mb-0">{{ Auth::user()->name }}</h6>
-            <span>#</span>
+            <span>{{ $role->name }}</span>
         </div>
     </div>
 
     <div class="navbar-nav w-100">
-        <a href="#"><i class="fa fa-home"></i> Home</a>
+        <a href="{{ route('home') }}"><i class="fa fa-home"></i> Home</a>
 
-        <!-- Sikh Directory -->
-        <a class="nav-link" data-bs-toggle="collapse" href="#sikhMenu" role="button">
-            <i class="fa fa-user-plus"></i> Sikh Directory
+        <!-- A -->
+        <a class="nav-link" data-bs-toggle="collapse" href="#a" role="button">
+            <i class="fa fa-user-plus"></i> A
         </a>
-        <div class="collapse" id="sikhMenu">
-            <a href="#" class="dropdown-item"><i class="fa fa-edit"></i> Edit Your Record</a>
-            <a href="#" class="dropdown-item"><i class="fa fa-eye"></i> View Your Record</a>
+        <div class="collapse" id="a">
+            <a href="#" class="dropdown-item"><i class="fa fa-edit"></i> A1</a>
+            <a href="#" class="dropdown-item"><i class="fa fa-eye"></i> A2</a>
         </div>
 
-        <!-- Business Directory -->
-        <a class="nav-link" data-bs-toggle="collapse" href="#businessMenu" role="button">
-            <i class="fa fa-cogs"></i> Business Directory
+        <!-- B -->
+        <a class="nav-link" data-bs-toggle="collapse" href="#b" role="button">
+            <i class="fa fa-cogs"></i> B
         </a>
-        <div class="collapse" id="businessMenu">
-            <a href="#" class="dropdown-item"><i class="fa fa-edit"></i> Edit Your Record</a>
-            <a href="#" class="dropdown-item"><i class="fa fa-eye"></i> View Your Record</a>
-        </div>
-
-        <!-- Jobs -->
-        <a class="nav-link" data-bs-toggle="collapse" href="#jobMenu" role="button">
-            <i class="fa fa-cogs"></i> List of Job Seekers
-        </a>
-        <div class="collapse" id="jobMenu">
-            <a href="#" class="dropdown-item"><i class="fa fa-edit"></i> Edit Your Record</a>
-            <a href="#" class="dropdown-item"><i class="fa fa-eye"></i> View Your Record</a>
-        </div>
-
-        <!-- Shaddi -->
-        <a class="nav-link" data-bs-toggle="collapse" href="#matrimonialMenu" role="button">
-            <i class="fa fa-cogs"></i> Matrimonial Listing
-        </a>
-        <div class="collapse" id="matrimonialMenu">
-            <a href="#" class="dropdown-item"><i class="fa fa-edit"></i> Edit Your Record</a>
-            <a href="#" class="dropdown-item"><i class="fa fa-eye"></i> View Your Record</a>
+        <div class="collapse" id="b">
+            <a href="#" class="dropdown-item"><i class="fa fa-edit"></i> B1</a>
+            <a href="#" class="dropdown-item"><i class="fa fa-eye"></i> B2</a>
         </div>
     </div>
 </nav>

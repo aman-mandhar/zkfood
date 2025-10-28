@@ -15,7 +15,6 @@
             <i class="fa fa-bars"></i>
         </button>
         <a href="{{ route('welcome') }}" class="navbar-brand text-white">
-            <img src="{{ asset('images/logo_main.png') }}" style="height: 40px;" alt="Logo">
             <img src="{{ asset('images/logo.png') }}" style="height: 40px;" alt="Logo">
         </a>
 

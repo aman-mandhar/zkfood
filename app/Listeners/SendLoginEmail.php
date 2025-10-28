@@ -34,6 +34,6 @@ class SendLoginEmail
         $agent = request()->userAgent() ?? 'unknown';
         $time = now()->timezone(config('app.timezone', 'UTC'))->toDayDateTimeString();
 
-        Mail::to($user->email)->queue(new LoginAlertMail($ip, $agent, $time));
+        // Mail::to($user->email)->queue(new LoginAlertMail($ip, $agent, $time));
     }
 }

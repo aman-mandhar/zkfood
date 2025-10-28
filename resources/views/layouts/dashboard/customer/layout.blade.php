@@ -1,21 +1,47 @@
 @php
     use Illuminate\Support\Facades\Auth;
     use App\Models\UserRole;
-    use App\Models\User;
+    use Illuminate\Support\Str;
 
-    $current = User::find(Auth::user()->id);
-    $role = UserRole::find($current->user_role_id);
-    $picture = $current->profile_image ? asset($current->profile_image) : asset('dashboard/dist/img/my-avatar.png');
-    $hasSikhDirectory = App\Models\SikhDirectory::where('user_id', Auth::id())->exists();
-    $hasBusinessDirectory = App\Models\BusinessDirectory::where('user_id', Auth::id())->exists();
-    $hasJobDirectory = App\Models\JobDirectory::where('user_id', Auth::id())->exists();
-    $hasMatrimonialDirectory = App\Models\MatrimonialDirectory::where('user_id', Auth::id())->exists();
-    $hasPosts = App\Models\Post::where('user_id', Auth::id())->exists();
+    // Current user (or null)
+    $user = Auth::user();
 
-    $sikh_slug = App\Models\SikhDirectory::where('user_id', Auth::id())->value('slug');
-    $business_slug = App\Models\BusinessDirectory::where('user_id', Auth::id())->value('slug');
-    $job_slug = App\Models\JobDirectory::where('user_id', Auth::id())->value('slug');
-    $matrimonial_slug = App\Models\MatrimonialDirectory::where('user_id', Auth::id())->value('slug');
+    // Resolve role safely (your users table column seems "user_role")
+    $role = null;
+    if ($user && !empty($user->user_role)) {
+        // If user_role is an ID for UserRole model
+        $role = UserRole::find($user->user_role);
+        // If instead you store a string like "customer", you can fake a role object:
+        if (!$role && is_string($user->user_role)) {
+            $role = (object)['slug' => Str::slug($user->user_role), 'name' => $user->user_role];
+        }
+    }
+
+    // Normalize to your folder names under layouts/dashboard/*
+    $roleKey = Str::of(optional($role)->slug ?? optional($role)->name ?? '')
+                ->lower()->replace(' ', '')->toString();
+
+    // Map some likely variants to your directories
+    $map = [
+        'customer'        => 'customer',
+        'user'            => 'customer',
+        'buyer'           => 'customer',
+
+        'deliverypartner' => 'deliverypartner',
+        'rider'           => 'deliverypartner',
+        'driver'          => 'deliverypartner',
+
+        'foodvendor'      => 'foodvendor',
+        'merchant'        => 'foodvendor',
+        'restaurant'      => 'foodvendor',
+        'vendor'          => 'foodvendor',
+    ];
+    $roleViewDir = $map[$roleKey] ?? 'customer'; // default to customer layout
+
+    // Avatar (fallback if none)
+    $picture = $user && $user->profile_image
+        ? asset($user->profile_image)       // e.g. 'storage/avatars/..' (ensure storage:link)
+        : asset('dashboard/dist/img/my-avatar.png');
 @endphp
 
 <!DOCTYPE html>
@@ -35,19 +61,24 @@
     @livewireStyles
 
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-        }
-        .navbar-custom {
-            background-color: #000000;
-        }
+        body { font-family: 'Segoe UI', sans-serif; }
+        .navbar-custom { background-color: #000000; }
+
+        .main-wrapper { display: flex; }
+
+        /* Content Area (right side) */
+        .content { flex: 1; width: auto; padding: 20px; }
+
+        /* Sidebar (left side) */
         .sidebar {
-            background-color: #446521;
+            background-color: #ffb52b;
             min-height: 100vh;
-            color: #fff;
+            color: #000000;
+            width: 220px;
+            flex-shrink: 0;
         }
         .sidebar a {
-            color: #ccc;
+            color: #000d73;
             text-decoration: none;
             display: block;
             padding: 10px 15px;
@@ -65,9 +96,7 @@
                 transition: left 0.3s;
                 z-index: 1000;
             }
-            .sidebar.show {
-                left: 0;
-            }
+            .sidebar.show { left: 0; }
         }
     </style>
 
@@ -75,17 +104,37 @@
 </head>
 <body>
 
-    @include('layouts.dashboard.guest.nav')
+    {{-- Top Nav --}}
+    @auth
+        {{-- Role-specific nav: layouts/dashboard/{role}/nav.blade.php --}}
+        @includeIf("layouts.dashboard.$roleViewDir.nav", ['user' => $user, 'picture' => $picture])
+    @else
+        {{-- Guest / portal nav --}}
+        @includeIf('layouts.portal.nav')
+    @endauth
 
     <div class="container-fluid">
         <div class="row">
-            @include('layouts.dashboard.guest.side')
+            {{-- Sidebar --}}
+            @auth
+                {{-- Role-specific side: layouts/dashboard/{role}/side.blade.php --}}
+                @includeIf("layouts.dashboard.$roleViewDir.side", ['user' => $user, 'picture' => $picture])
+            @endauth
 
-            <main class="col-lg-10 col-md-9 ms-sm-auto px-md-4 py-4">
+            {{-- Content --}}
+            <main class="@auth col-lg-10 col-md-9 @else col-12 @endauth ms-sm-auto px-md-4 py-4">
+                {{-- Flash alerts (optional shared partial) --}}
+                @includeIf('layouts.portal.alert')
+
                 @yield('content')
             </main>
         </div>
     </div>
+
+    {{-- Footer for portal (optional) --}}
+    @guest
+        @includeIf('layouts.portal.footer')
+    @endguest
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -93,9 +142,16 @@
     @livewireScripts
 
     <script>
-        document.getElementById('sidebarToggle').addEventListener('click', function () {
-            document.getElementById('sidebarMenu').classList.toggle('show');
-        });
+        // Guard against nulls if a page doesn't render the toggle/side IDs
+        (function () {
+            var toggle = document.getElementById('sidebarToggle');
+            var menu   = document.getElementById('sidebarMenu');
+            if (toggle && menu) {
+                toggle.addEventListener('click', function () {
+                    menu.classList.toggle('show');
+                });
+            }
+        })();
     </script>
 
     @stack('scripts')
