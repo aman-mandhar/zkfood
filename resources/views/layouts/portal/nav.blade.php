@@ -1,118 +1,159 @@
-<header>
-        <!-- Header Start -->
-       <div class="header-area">
-            <div class="main-header ">
-                <div class="header-top black-bg d-none d-md-block">
-                   <div class="container">
-                       <div class="col-xl-12">
-                            <div class="row d-flex justify-content-between align-items-center">
-                                <div class="header-info-left">
-                                    <ul>
-                                        <li>{{ \Carbon\Carbon::now()->format('l, j F Y') }}</li>
-                                    </ul>
-                                </div>
-                                <div class="header-info-right">
-                                    <ul class="header-social">
-                                        <li><a href="#"><i class="fab fa-twitter"></i></a></li>
-                                        <li><a href="#"><i class="fab fa-instagram"></i></a></li>
-                                       <li> <a href="#"><i class="fab fa-pinterest-p"></i></a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                       </div>
-                   </div>
-                </div>
-                <div class="header-mid d-none d-md-flex">
-                    <div class="container header-mid__inner">
-                        <div class="row d-flex align-items-center">
-                            <div class="brand col-md-3">
-                                <a href="index.html" class="brand__kv">
-                                    <img src="{{ asset('images/kv_logo.png') }}" height="90" alt="ZK News badge">
-                                </a>
-                            </div>
-                            <div class="header-banner--ad col-md-9 text-right" aria-hidden="true">
-                                <!-- placeholder for banner / ad -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-               <div class="header-bottom header-sticky">
-                    <div class="container">
-                        <div class="row align-items-center">
-                            <div class="col-xl-10 col-lg-10 col-md-12 header-flex">
-                                <!-- sticky -->
-                                <div class="sticky-logo col-md-4">
-                                    <a href="index.html"><img src="{{ asset('images/kv_logo.png') }}" height="50" alt="KV badge"></a>
-                                </div>
-                                <!-- Main-menu -->
-                                <div class="main-menu d-none d-md-block col-md-8">
-                                    <nav>
-                                        <ul id="navigation">
-                                            <li><a href="{{ route('welcome') }}">Home</a></li>
-                                            <li><a href="#">Latest News</a>
-                                                <ul class="submenu">
-                                                    <li><a href="#">1</a></li>
-                                                    <li><a href="#">2</a></li>
-                                                </ul>
-                                            </li>
-                                            <li><a href="#">About</a></li>
-                                            <li><a href="#">Classifieds</a>
-                                                <ul class="submenu">
-                                                    <li><a href="{{ url('/sikh/search') }}">Vacancies</a></li>
-                                                    <li><a href="{{ url('/jobs/search') }}">job Candidates </a></li>
-                                                    <li><a href="{{ url('/business-directories') }}">Business Directory</a></li>
-                                                    <li><a href="{{ url('/matrimonial') }}">Matrimonials</a></li>
-                                                </ul>
-                                            </li>
-                                            @auth
-                                                @php
-                                                    switch(Auth::user()->user_role_id){
-                                                        case 1: $route = route('admin.dashboard'); break;
-                                                        case 11: $route = route('promoter.dashboard'); break;
-                                                        case 2: $route = route('guest.dashboard'); break;
-                                                    }
-                                                @endphp
-                                                <li><a href="#">My Account</a>
-                                                    <ul class="submenu">
-                                                        <li><a href="{{ route('dashboard.all') }}">Dashboard</a></li>
-                                                        <li><a href="{{ route('profile.view', Auth::user()->id) }}">Profile</a></li>
-                                                        <li><a href="{{ route('edit.profile') }}">Edit Profile</a></li>
-                                                        <li><a href="{{ route('change.password.form') }}">Change Password</a></li>
-                                                        <li><form method="POST" action="{{ route('logout') }}">
-                                                                @csrf
-                                                                <button type="submit" class="dropdown-item">Logout</button>
-                                                            </form>
-                                                        </li>
-                                                    </ul>
-                                                </li>
-                                            @else
-                                                <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Login</a></li>
-                                                <li class="nav-item"><a class="nav-link" href="{{ route('register') }}">Signup</a></li>
-                                            @endauth
-                                        </ul>
-                                    </nav>
-                                </div>
-                            </div>
-                            <div class="col-xl-2 col-lg-2 col-md-4">
-                                <div class="header-right-btn f-right d-none d-lg-block">
-                                    <i class="fas fa-search special-tag"></i>
-                                    <div class="search-box">
-                                        <form action="#">
-                                            <input type="text" placeholder="Search">
+<style>
+    /* Sticky navbar container */
+    .navbar-area {
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+        width: 100%;
+        background-color: #ffffff;
+        transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+    }
 
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Mobile Menu -->
-                            <div class="col-12">
-                                <div class="mobile_menu d-block d-md-none"></div>
-                            </div>
+    /* Slide-down animation on load */
+    .navbar-animate {
+        animation: navbarSlideDown 0.5s ease-out;
+    }
 
-                        </div>
-                    </div>
-               </div>
+    @keyframes navbarSlideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-25px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* When user scrolls down slightly */
+    .navbar-area.nav-scrolled {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Hide on scroll down */
+    .navbar-area.nav-hidden {
+        transform: translateY(-100%);
+    }
+
+    /* Modern nav-links */
+    .navbar .nav-link {
+        font-weight: 500;
+        padding: 0.5rem 0.9rem;
+        position: relative;
+        transition: color 0.2s ease;
+    }
+
+    .navbar .nav-link::after {
+        content: "";
+        position: absolute;
+        left: 0.9rem;
+        right: 0.9rem;
+        bottom: 0.2rem;
+        height: 2px;
+        transform: scaleX(0);
+        transform-origin: center;
+        transition: transform 0.2s ease;
+        background-color: #fd7e14;
+    }
+
+    .navbar .nav-link:hover::after,
+    .navbar .nav-link.active::after {
+        transform: scaleX(1);
+    }
+</style>
+
+<!-- Navbar Start -->
+<header class="navbar-area">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 navbar-animate">
+
+            <!-- Logo -->
+            <a href="{{ url('/') }}" class="navbar-brand p-0">
+                <img src="{{ asset('portal/assets/img/logo/logo.png') }}"
+                     alt="Logo" style="width: 85px; height: 85px;">
+            </a>
+
+            <!-- Mobile Toggler -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                <span class="fa fa-bars"></span>
+            </button>
+
+            <!-- Menu Items -->
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav ms-auto align-items-lg-center mb-2 mb-lg-0">
+
+                    <li class="nav-item">
+                        <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active' : '' }}">Home</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ url('/about') }}" class="nav-link {{ request()->is('about') ? 'active' : '' }}">About</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ url('/service') }}" class="nav-link {{ request()->is('service') ? 'active' : '' }}">Service</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ url('/menu') }}" class="nav-link {{ request()->is('menu') ? 'active' : '' }}">Menu</a>
+                    </li>
+
+                    <!-- Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            Pages
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url('/booking') }}">Booking</a></li>
+                            <li><a class="dropdown-item" href="{{ url('/team') }}">Our Team</a></li>
+                            <li><a class="dropdown-item" href="{{ url('/testimonial') }}">Testimonial</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ url('/contact') }}" class="nav-link {{ request()->is('contact') ? 'active' : '' }}">Contact</a>
+                    </li>
+
+                    <!-- CTA Button -->
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <a href="#" class="btn btn-primary py-2 px-4">Book A Table</a>
+                    </li>
+
+                </ul>
             </div>
-       </div>
-        <!-- Header End -->
-    </header>
+
+        </nav>
+    </div>
+</header>
+<!-- Navbar End -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const header = document.querySelector('.navbar-area');
+        if (!header) return;
+
+        let lastScrollTop = 0;
+        const offsetToShowShadow = 60;    // shadow after 60px scroll
+        const offsetToHideOnDown = 150;   // hide only after 150px scroll
+
+        window.addEventListener('scroll', function () {
+            const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+            // Add shadow
+            if (currentScroll > offsetToShowShadow) {
+                header.classList.add('nav-scrolled');
+            } else {
+                header.classList.remove('nav-scrolled');
+            }
+
+            // Hide on scroll down, show on scroll up
+            if (currentScroll > lastScrollTop && currentScroll > offsetToHideOnDown) {
+                header.classList.add('nav-hidden');    // hiding...
+            } else {
+                header.classList.remove('nav-hidden'); // showing...
+            }
+
+            lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+        });
+    });
+</script>

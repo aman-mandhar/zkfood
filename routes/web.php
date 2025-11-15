@@ -47,8 +47,6 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 // Global Home Page
 Route::get('/', [HomeController::class, 'home'])->name('home');
 
-// City-wise Home Page (if you use city context via query or session)
-Route::get('/welcome', [HomeController::class, 'index'])->name('welcome');
 
 // SEO/static pages (optional)
 Route::get('/about', [HomeController::class, 'about'])->name('about');
