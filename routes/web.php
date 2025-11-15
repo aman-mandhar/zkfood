@@ -208,7 +208,6 @@ Route::middleware(['auth', 'can:access-admin']) // or role:Admin
     ->as('admin.')
     ->group(function () {
 
-        Route::get('/', [AdminDashboard::class, 'index'])->name('dashboard');
 
         Route::resource('restaurants', AdminRestaurantController::class);
         Route::resource('users',       AdminUserController::class)->only(['index','show','edit','update','destroy']);
